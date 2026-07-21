@@ -1,27 +1,325 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
 <meta charset="UTF-8">
-<title>Ansem</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GM // Robinhood Chain</title>
 <style>
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #0d0d0d;
-    font-family: Tahoma, sans-serif;
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Vazirmatn:wght@400;600;800&display=swap');
+
+  :root{
+    --bg:#06120c;
+    --bg2:#0b1f14;
+    --line:#1c3a29;
+    --hood:#00e07a;
+    --hood-dim:#0a8a52;
+    --text:#d7f3e3;
+    --muted:#6f9c85;
+    --danger:#ff6b6b;
   }
-  h1 {
-    font-size: 6vw;
-    color: #fff;
-    letter-spacing: 4px;
-    text-shadow: 0 0 20px rgba(255,255,255,0.3);
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(0,224,122,0.12), transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Vazirmatn','JetBrains Mono',monospace;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
   }
+  .card{
+    width:100%;
+    max-width:460px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:32px 28px;
+    position:relative;
+    overflow:hidden;
+  }
+  .card::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:repeating-linear-gradient(0deg, rgba(0,224,122,0.035) 0px, rgba(0,224,122,0.035) 1px, transparent 1px, transparent 3px);
+    pointer-events:none;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    color:var(--hood-dim);
+    text-transform:uppercase;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:18px;
+  }
+  .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--muted);
+    display:inline-block;
+    margin-left:6px;
+  }
+  .dot.on{background:var(--hood);box-shadow:0 0 8px var(--hood);}
+  h1{
+    font-size:15px;
+    color:var(--muted);
+    margin:0 0 26px;
+    font-weight:600;
+  }
+  .streak-row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:26px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .stat{
+    flex:1;
+    padding:16px 10px;
+    text-align:center;
+    border-left:1px solid var(--line);
+  }
+  .stat:last-child{border-left:none;}
+  .stat .num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:26px;
+    font-weight:800;
+    color:var(--hood);
+  }
+  .stat .lbl{
+    font-size:11px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  .gm-btn{
+    width:100%;
+    padding:26px 0;
+    border-radius:14px;
+    border:none;
+    background:linear-gradient(180deg, var(--hood), var(--hood-dim));
+    color:#062915;
+    font-family:'JetBrains Mono',monospace;
+    font-size:28px;
+    font-weight:800;
+    letter-spacing:0.08em;
+    cursor:pointer;
+    transition:transform .12s ease, opacity .2s ease;
+  }
+  .gm-btn:hover:not(:disabled){transform:translateY(-2px);}
+  .gm-btn:disabled{
+    background:var(--line);
+    color:var(--muted);
+    cursor:not-allowed;
+  }
+  .connect-btn{
+    width:100%;
+    padding:16px 0;
+    border-radius:14px;
+    border:1px solid var(--hood-dim);
+    background:transparent;
+    color:var(--hood);
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:0.05em;
+    cursor:pointer;
+  }
+  .status{
+    margin-top:16px;
+    text-align:center;
+    font-size:13px;
+    color:var(--muted);
+    min-height:18px;
+  }
+  .status.err{color:var(--danger);}
+  .addr{
+    text-align:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    color:var(--muted);
+    margin-top:10px;
+  }
+  .contract-input{
+    width:100%;
+    margin-bottom:16px;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:#04140b;
+    color:var(--text);
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+  }
+  .contract-input::placeholder{color:var(--muted);}
 </style>
 </head>
 <body>
-  <h1>ANSEM</h1>
+
+<div class="card">
+  <div class="eyebrow">
+    <span>ROBINHOOD CHAIN · 4663</span>
+    <span><span id="netDot" class="dot"></span>NETWORK</span>
+  </div>
+  <h1>One transaction a day. Keep the chain alive.</h1>
+
+  <input id="contractAddr" class="contract-input" type="text" value="0x848152BC445341556ABf79Dd6a871bA6d1Da029F" style="display:none;" />
+
+  <div class="streak-row">
+    <div class="stat"><div class="num" id="streakVal">–</div><div class="lbl">STREAK</div></div>
+    <div class="stat"><div class="num" id="totalVal">–</div><div class="lbl">TOTAL GM</div></div>
+    <div class="stat"><div class="num" id="cooldownVal">–</div><div class="lbl">NEXT GM</div></div>
+  </div>
+
+  <button id="connectBtn" class="connect-btn">Connect Wallet</button>
+  <button id="gmBtn" class="gm-btn" style="display:none;margin-top:14px;" disabled>GM</button>
+
+  <div id="status" class="status"></div>
+  <div id="addr" class="addr"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.2/dist/ethers.umd.min.js"></script>
+<script>
+const CHAIN_ID_DEC = 4663;
+const CHAIN_ID_HEX = "0x" + CHAIN_ID_DEC.toString(16);
+const RPC_URL = "https://rpc.mainnet.chain.robinhood.com";
+const EXPLORER_URL = "https://robinhoodchain.blockscout.com";
+
+const ABI = [
+  "function gm() external",
+  "function streak(address) view returns (uint256)",
+  "function totalGMs(address) view returns (uint256)",
+  "function timeUntilNextGM(address) view returns (uint256)",
+  "function canGM(address) view returns (bool)"
+];
+
+let provider, signer, contract, userAddress;
+let countdownInterval;
+
+const connectBtn = document.getElementById('connectBtn');
+const gmBtn = document.getElementById('gmBtn');
+const statusEl = document.getElementById('status');
+const addrEl = document.getElementById('addr');
+const netDot = document.getElementById('netDot');
+const contractInput = document.getElementById('contractAddr');
+const streakVal = document.getElementById('streakVal');
+const totalVal = document.getElementById('totalVal');
+const cooldownVal = document.getElementById('cooldownVal');
+
+function setStatus(msg, isErr){
+  statusEl.textContent = msg || "";
+  statusEl.className = "status" + (isErr ? " err" : "");
+}
+
+function formatSeconds(s){
+  s = Number(s);
+  if (s <= 0) return "Ready";
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  const sec = s%60;
+  return h + "h " + m + "m " + sec + "s";
+}
+
+async function ensureNetwork(){
+  const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+  if (chainId === CHAIN_ID_HEX) return true;
+  try {
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: CHAIN_ID_HEX }]
+    });
+    return true;
+  } catch (switchErr) {
+    if (switchErr.code === 4902) {
+      await window.ethereum.request({
+        method: 'wallet_addEthereumChain',
+        params: [{
+          chainId: CHAIN_ID_HEX,
+          chainName: 'Robinhood Chain',
+          nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+          rpcUrls: [RPC_URL],
+          blockExplorerUrls: [EXPLORER_URL]
+        }]
+      });
+      return true;
+    }
+    throw switchErr;
+  }
+}
+
+async function connect(){
+  if (!window.ethereum){
+    setStatus("No wallet extension found", true);
+    return;
+  }
+  if (!contractInput.value.trim()){
+    setStatus("Enter the contract address first", true);
+    return;
+  }
+  try {
+    setStatus("Connecting...");
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
+    await ensureNetwork();
+
+    provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner();
+    userAddress = await signer.getAddress();
+    contract = new ethers.Contract(contractInput.value.trim(), ABI, signer);
+
+    netDot.classList.add('on');
+    addrEl.textContent = userAddress.slice(0,6) + "..." + userAddress.slice(-4);
+    connectBtn.style.display = 'none';
+    gmBtn.style.display = 'block';
+    setStatus("");
+
+    await refresh();
+    countdownInterval = setInterval(refresh, 15000);
+  } catch (e){
+    setStatus(e.message || "Connection failed", true);
+  }
+}
+
+async function refresh(){
+  if (!contract || !userAddress) return;
+  try {
+    const [streak, total, remaining] = await Promise.all([
+      contract.streak(userAddress),
+      contract.totalGMs(userAddress),
+      contract.timeUntilNextGM(userAddress)
+    ]);
+    streakVal.textContent = streak.toString();
+    totalVal.textContent = total.toString();
+    cooldownVal.textContent = formatSeconds(remaining);
+    gmBtn.disabled = remaining > 0n;
+  } catch (e){
+    setStatus("Failed to read contract data", true);
+  }
+}
+
+async function sendGM(){
+  if (!contract) return;
+  try {
+    gmBtn.disabled = true;
+    setStatus("Sending transaction...");
+    const tx = await contract.gm();
+    setStatus("Waiting for confirmation...");
+    await tx.wait();
+    setStatus("GM sent ✅");
+    await refresh();
+  } catch (e){
+    setStatus(e.shortMessage || e.message || "Transaction failed", true);
+    await refresh();
+  }
+}
+
+connectBtn.addEventListener('click', connect);
+gmBtn.addEventListener('click', sendGM);
+</script>
 </body>
 </html>
